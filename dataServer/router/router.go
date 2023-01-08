@@ -3,13 +3,12 @@ package router
 import (
 	"file-server/dataServer/controller/file"
 	"file-server/dataServer/controller/tempFile"
-	"file-server/token"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Setup(r *gin.Engine) {
-	fileGroup := r.Group("/file", token.AuthMiddleware())
+	fileGroup := r.Group("/file")
 	{
 		fileGroup.PUT("/upload", file.Upload)
 		fileGroup.GET("/download", file.Download)

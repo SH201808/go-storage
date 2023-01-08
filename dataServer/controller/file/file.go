@@ -1,7 +1,7 @@
 package file
 
 import (
-	"crypto/sha256"
+	"crypto/sha1"
 	"encoding/base64"
 	"file-server/dataServer/locate"
 	response "file-server/models/Response"
@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,22 +32,26 @@ func Upload(c *gin.Context) {
 }
 
 func Download(c *gin.Context) {
-	fileHash := c.Query("fileHash")
+	fileHash := c.Request.Header.Get("Hash")
+	log.Println("hhhhh")
+	log.Println("download hash:" + fileHash)
 	filePath := getFile(fileHash)
-	c.File(filePath)
+	sendFile(c.Writer, filePath)
 }
 
-func getFile(hash string) string {
-	files, _ := filepath.Glob(locate.FileLoc + hash + ".*")
+func getFile(name string) string {
+	filePath := locate.FileLoc + name + ".*"
+	files, _ := filepath.Glob(filePath)
 	if len(files) != 1 {
 		return ""
 	}
 	file := files[0]
-	h := sha256.New()
+	h := sha1.New()
 	sendFile(h, file)
 	d := url.PathEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
+	hash := strings.Split(file, ".")[2]
 	if d != hash {
-		log.Println("object hash mismatch", file)
+		log.Printf("object hash mismatch:%s\n, getHash:%s\n", hash, d)
 		locate.Delete(file)
 		return ""
 	}

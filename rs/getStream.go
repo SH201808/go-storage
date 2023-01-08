@@ -104,7 +104,7 @@ func (d *decoder) getData() error {
 	}
 	err := d.enc.Reconstruct(shards)
 	if err != nil {
-		return err
+		return fmt.Errorf("Reconstruct shards err:%v", err)
 	}
 	for i := range repairIds {
 		id := repairIds[i]

@@ -6,14 +6,15 @@ import (
 	"file-server/dataServer/locate"
 	"file-server/models"
 	response "file-server/models/Response"
+	"file-server/utils"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +22,7 @@ import (
 func UploadMeta(c *gin.Context) {
 	fileMeta := models.TempFileMeta{
 		Size: c.Request.Header.Get("Size"),
-		Hash: c.Request.Header.Get("Hash"),
+		Name: c.Request.Header.Get("Hash"),
 		UUID: UUID.Gen(),
 	}
 	data, err := json.Marshal(fileMeta)
@@ -134,11 +135,15 @@ func RemoveToStore(c *gin.Context) {
 }
 
 func commitTempObject(datFile string, tempInfo *models.TempFileMeta) {
-	newPath := locate.FileLoc + tempInfo.Hash
-	info := strings.Split(tempInfo.Hash, ".")
-	id, _ := strconv.Atoi(info[1])
+	f, _ := os.Open(datFile)
+	d := url.PathEscape(utils.CanculateSha1(f))
+	f.Close()
+
+	hash := tempInfo.Hash()
+	newPath := locate.FileLoc + tempInfo.Name + "." + d
+	id, _ := strconv.Atoi(tempInfo.Id())
 	os.Rename(datFile, newPath)
-	locate.Add(newPath, id)
+	locate.Add(hash, id)
 }
 
 func readFromFile(uuid string) (*models.TempFileMeta, error) {

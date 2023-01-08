@@ -142,23 +142,3 @@ func GenProxy(ip string, method string, c *gin.Context, req *http.Request) {
 	req.URL.Scheme = "http"
 	req.Method = c.Request.Method
 }
-
-func deleteQuery(req *http.Request, delKey ...string) {
-	temp := req.URL.Query()
-	for _, key := range delKey {
-		temp.Del(key)
-	}
-	req.URL.RawQuery = temp.Encode()
-}
-
-func AddQuery(req *http.Request, values ...string) {
-	length := len(values)
-	if length%2 == 1 {
-		return
-	}
-	temp := req.URL.Query()
-	for i := 0; i < length/2; i++ {
-		temp.Add(values[i], values[i+1])
-	}
-	req.URL.RawQuery = temp.Encode()
-}
