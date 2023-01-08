@@ -1,0 +1,50 @@
+machine_id: 1
+machine_ip: "127.0.0.1"
+port: ""
+start_time: "2022-05-12"
+
+elasticSearch:
+  host: "127.0.0.1"
+  port: "9200"
+
+fileStore:
+  absLoc: "/home/zhy/gocode/file-server/fileStore/"
+
+rabbitMQ:
+  user: "guest"
+  password: "guest"
+  port: "5672"
+  ip: "localhost"
+
+oss:
+  endPoint: "https://oss-cn-hangzhou.aliyuncs.com"
+  accessKeyId: "LTAI5tQ9oQNYJD3UQsdQLSVB"
+  accessKeySecret: "IyBNryeffEeRGPRUNkfWkeaSsxFUb7"
+  bucketName: "file-server-sh"
+
+mysql:
+  host: "192.168.8.0"
+  port: 3306
+  root: "SH"
+  password: "root"
+  db_name: "file-server"
+  max_open_conn: 200
+  max_idle_conn: 50
+
+redis:
+  host: "127.0.0.1"
+  user: "normal"
+  password: "123456"
+  port: 6379
+  db: 0
+  pool_size: 100
+
+# 选取合适的AES密钥，可选长度为16、24、32字节
+aes:
+  key: "just_a_test_key~"
+
+token:
+  secret: "just_a_test_key~"
+  issuer: "SH"
+
+
