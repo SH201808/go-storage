@@ -24,8 +24,8 @@ func SetFileLoc() {
 	flag.StringVar(&port, "port", ":8080", "端口号")
 	flag.Parse()
 	setting.Conf.Port = port
-	FileLoc = "/home/zhy/gocode/file-server/dataServer/fileStore/" + setting.Conf.Port + "/"
-	TempLoc = "/home/zhy/gocode/file-server/dataServer/tempData/" + setting.Conf.Port + "/"
+	FileLoc = "./dataServer/fileStore/" + setting.Conf.Port + "/"
+	TempLoc = "./dataServer//tempData/" + setting.Conf.Port + "/"
 	mkdir(FileLoc)
 	mkdir(TempLoc)
 }
