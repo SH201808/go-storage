@@ -9,7 +9,6 @@ import (
 	"file-server/utils"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -154,7 +153,7 @@ func readFromFile(uuid string) (*models.TempFileMeta, error) {
 	}
 	defer f.Close()
 
-	data, err := ioutil.ReadAll(f)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("read file err:", err)
 	}

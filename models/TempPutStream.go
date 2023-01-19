@@ -3,7 +3,7 @@ package models
 import (
 	"encoding/json"
 	response "file-server/models/Response"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -29,7 +29,7 @@ func NewPutStream(Size, Hash, Server string) (*TempPutStraem, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "NewPutStream Do req: hash:%s, size: %s, ip: %s", Hash, Server, Size)
 	}
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	respData := &response.Response{}
 	json.Unmarshal(data, &respData)
 	if err != nil {

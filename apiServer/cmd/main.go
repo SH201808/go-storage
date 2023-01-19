@@ -30,5 +30,5 @@ func main() {
 	r := gin.Default()
 	router.Setup(r)
 
-	r.Run(":9090")
+	r.Run(":9999")
 }

@@ -11,8 +11,8 @@ fileStore:
   absLoc: "/home/zhy/gocode/file-server/fileStore/"
 
 rabbitMQ:
-  user: "guest"
-  password: "guest"
+  user: "admin"
+  password: "admin"
   port: "5672"
   ip: "localhost"
 
@@ -23,11 +23,11 @@ oss:
   bucketName: "file-server-sh"
 
 mysql:
-  host: "192.168.8.0"
+  host: "127.0.0.1"
   port: 3306
-  root: "SH"
-  password: "root"
-  db_name: "file-server"
+  root: "root"
+  password: "12345678"
+  db_name: "file_server"
   max_open_conn: 200
   max_idle_conn: 50
 

@@ -2,6 +2,7 @@ package router
 
 import (
 	file "file-server/apiServer/controller/File"
+	"file-server/apiServer/controller/Resume"
 	user "file-server/apiServer/controller/User"
 	"file-server/token"
 
@@ -13,6 +14,11 @@ func Setup(r *gin.Engine) {
 	{
 		fileGroup.PUT("/upload", file.Upload)
 		fileGroup.GET("/download", file.Download)
+
+		resumeGroup := fileGroup.Group("/resume")
+		{
+			resumeGroup.POST("/upload", Resume.Upload)
+		}
 
 		// fileGroup.GET("/query", File.Query)
 		// fileGroup.DELETE("/delete", File.Delete)

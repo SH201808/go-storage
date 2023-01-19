@@ -24,8 +24,8 @@ func SetFileLoc() {
 	flag.StringVar(&port, "port", ":8080", "端口号")
 	flag.Parse()
 	setting.Conf.Port = port
-	FileLoc = "./dataServer/fileStore/" + setting.Conf.Port + "/"
-	TempLoc = "./dataServer//tempData/" + setting.Conf.Port + "/"
+	FileLoc = "../fileStore/" + setting.Conf.Port + "/"
+	TempLoc = "../tempData/" + setting.Conf.Port + "/"
 	mkdir(FileLoc)
 	mkdir(TempLoc)
 }
@@ -35,7 +35,11 @@ func mkdir(loc string) {
 	if os.IsExist(err) {
 		return
 	}
-	os.Mkdir(loc, os.ModePerm)
+	err = os.MkdirAll(loc, os.ModePerm)
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
 	os.Chmod(loc, 0777)
 }
 

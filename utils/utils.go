@@ -10,9 +10,24 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 
 	"os"
 )
+
+func GetOffsetFromHeader(header http.Header) int64 {
+	byteRange := header.Get("range")
+	if len(byteRange) < 7 {
+		return 0
+	}
+	if byteRange[:6] != "bytes=" {
+		return 0
+	}
+	bytePos := strings.Split(byteRange[6:], "-")
+	offset, _ := strconv.ParseInt(bytePos[0], 0, 64)
+	return offset
+}
 
 func GenSha1(data []byte) string {
 	_sha1 := sha1.New()

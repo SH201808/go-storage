@@ -33,9 +33,12 @@ func Upload(c *gin.Context) {
 
 func Download(c *gin.Context) {
 	fileHash := c.Request.Header.Get("Hash")
-	log.Println("hhhhh")
 	log.Println("download hash:" + fileHash)
 	filePath := getFile(fileHash)
+	if filePath == "" {
+		c.Status(http.StatusNotFound)
+		return
+	}
 	sendFile(c.Writer, filePath)
 }
 
@@ -43,13 +46,14 @@ func getFile(name string) string {
 	filePath := locate.FileLoc + name + ".*"
 	files, _ := filepath.Glob(filePath)
 	if len(files) != 1 {
+		log.Println("未找到")
 		return ""
 	}
 	file := files[0]
 	h := sha1.New()
 	sendFile(h, file)
 	d := url.PathEscape(base64.StdEncoding.EncodeToString(h.Sum(nil)))
-	hash := strings.Split(file, ".")[2]
+	hash := strings.Split(file, name+".")[1]
 	if d != hash {
 		log.Printf("object hash mismatch:%s\n, getHash:%s\n", hash, d)
 		locate.Delete(file)

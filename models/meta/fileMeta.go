@@ -15,13 +15,11 @@ var Mappings = `{
 		"number_of_replicas":0
 	},
 	"mappings":{
-		"doc:" {
-			"properties":{
-				"hash":		{"type":"text"},
-				"name":		{"type":"text"},
-				"size":		{"type":"text"},
-				"version":	{"type":"long"}
-			}
+		"properties":{
+			"hash":		{"type":"text"},
+			"name":		{"type":"text"},
+			"size":		{"type":"text"},
+			"version":	{"type":"long"}
 		}
 	}
 }

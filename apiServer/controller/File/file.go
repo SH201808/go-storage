@@ -9,13 +9,12 @@ import (
 	"file-server/service/filemeta"
 	"file-server/utils"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
-
-	"github.com/gin-gonic/gin"
 )
 
 func Upload(c *gin.Context) {
@@ -25,6 +24,7 @@ func Upload(c *gin.Context) {
 		return
 	}
 	// c.Request.URL.EscapedPath()
+	// todo 上传携带空格的数据存在转义问题
 	FileSize := c.Request.Header.Get("FileSize")
 	fileSize, _ := strconv.Atoi(FileSize)
 	//post元数据到数据服务
@@ -98,6 +98,15 @@ func Download(c *gin.Context) {
 		return
 	}
 	defer stream.Close()
+
+	//获取断点下载偏移量
+	offset := utils.GetOffsetFromHeader(c.Request.Header)
+	if offset != 0 {
+		stream.Seek(offset, io.SeekCurrent)
+		c.Header("content-range", fmt.Sprintf("bytes%d-%d/%d", offset, size-1, size))
+		c.Status(http.StatusPartialContent)
+	}
+
 	_, err = io.Copy(c.Writer, stream)
 	if err != nil {
 		log.Println("copy err:", err)

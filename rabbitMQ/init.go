@@ -16,11 +16,12 @@ type MQ struct {
 }
 
 func New(cfg setting.RabbitMQConfig) *MQ {
-	url := fmt.Sprintf("amqp://%s:%s@%s:%s/",
+	url := fmt.Sprintf("amqp://%s:%s@%s:%s/%s",
 		cfg.User,
 		cfg.Password,
 		cfg.Ip,
-		cfg.Port)
+		cfg.Port,
+		cfg.User)
 	conn, err := amqp.Dial(url)
 	failOnError(err, "init mq err")
 
