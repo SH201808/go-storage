@@ -176,3 +176,25 @@ func compareSize(tempInfo *models.TempFileMeta, datFile *os.File) bool {
 	}
 	return true
 }
+
+func GetFileDat(c *gin.Context) {
+	// todo uuid获取方式暂定
+	uuid := c.Query("uuid")
+	filePath := locate.TempLoc + uuid + ".dat"
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	info, err := file.Stat()
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.Header("content-length", fmt.Sprintf("%d", info.Size()))
+}

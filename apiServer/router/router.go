@@ -17,7 +17,9 @@ func Setup(r *gin.Engine) {
 
 		resumeGroup := fileGroup.Group("/resume")
 		{
-			resumeGroup.POST("/upload", Resume.Upload)
+			resumeGroup.POST("/getToken", Resume.GetToken)
+			resumeGroup.PUT("/upload", Resume.Upload)
+			resumeGroup.HEAD("/getCurrentSize", Resume.GetCurrentSize)
 		}
 
 		// fileGroup.GET("/query", File.Query)

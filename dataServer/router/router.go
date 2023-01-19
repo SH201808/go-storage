@@ -32,5 +32,8 @@ func Setup(r *gin.Engine) {
 		tempFileGroup.PATCH("/file", tempFile.UploadtoTempFile)     //上传到暂时文件
 		tempFileGroup.PUT("/removeToStore", tempFile.RemoveToStore) //转正
 		tempFileGroup.DELETE("/fileDelete", tempFile.DeleteFile)
+
+		//断点续传服务
+		tempFileGroup.GET("/getFileDat", tempFile.GetFileDat)
 	}
 }
