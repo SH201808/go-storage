@@ -10,33 +10,22 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
-	"strings"
 
 	"os"
 )
-
-func GetOffsetFromHeader(header http.Header) int64 {
-	byteRange := header.Get("range")
-	if len(byteRange) < 7 {
-		return 0
-	}
-	if byteRange[:6] != "bytes=" {
-		return 0
-	}
-	bytePos := strings.Split(byteRange[6:], "-")
-	offset, _ := strconv.ParseInt(bytePos[0], 0, 64)
-	return offset
-}
 
 func GenSha1(data []byte) string {
 	_sha1 := sha1.New()
 	return hex.EncodeToString(_sha1.Sum(data))
 }
 
-func CanculateSha1(reader io.Reader) string {
+func CalculateSha1(reader io.Reader) string {
 	_sha1 := sha1.New()
-	io.Copy(_sha1, reader)
+	n, err := io.Copy(_sha1, reader)
+	log.Println("CalculateSha1 n:", n)
+	if err != nil {
+		log.Println("CalculateSha1 err:", err)
+	}
 	return url.PathEscape(base64.StdEncoding.EncodeToString(_sha1.Sum(nil)))
 }
 

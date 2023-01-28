@@ -13,7 +13,7 @@ func NewRSResumableGetStream(dataServers []string, uuids []string, size int64) (
 	readers := make([]io.Reader, ALL_SHARDS)
 	var e error
 	for i := 0; i < ALL_SHARDS; i++ {
-		readers[i], e = models.NewGetStream(dataServers[i], uuids[i])
+		readers[i], e = models.NewTempGetStream(dataServers[i], uuids[i])
 		if e != nil {
 			return nil, e
 		}

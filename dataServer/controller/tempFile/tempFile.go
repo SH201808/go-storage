@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"file-server/dataServer/UUID"
 	"file-server/dataServer/locate"
+	"file-server/middleware"
 	"file-server/models"
 	response "file-server/models/Response"
 	"file-server/utils"
@@ -11,7 +12,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 
@@ -66,7 +66,7 @@ func UploadtoTempFile(c *gin.Context) {
 
 	infoPath := locate.TempLoc + tempInfo.UUID
 	datPath := infoPath + ".dat"
-	datFile, err := os.OpenFile(datPath, os.O_RDWR, 0777)
+	datFile, err := os.OpenFile(datPath, os.O_RDWR|os.O_APPEND, 0777)
 	if err != nil {
 		log.Println("open datFile err:", err)
 		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
@@ -135,7 +135,7 @@ func RemoveToStore(c *gin.Context) {
 
 func commitTempObject(datFile string, tempInfo *models.TempFileMeta) {
 	f, _ := os.Open(datFile)
-	d := url.PathEscape(utils.CanculateSha1(f))
+	d := utils.CalculateSha1(f)
 	f.Close()
 
 	hash := tempInfo.Hash()
@@ -169,15 +169,31 @@ func compareSize(tempInfo *models.TempFileMeta, datFile *os.File) bool {
 		return false
 	}
 
-	datSize := strconv.Itoa(int(info.Size()))
-	if datSize != tempInfo.Size {
-		log.Println("file Size mismatch: actualSize:" + datSize + "tempInfoSize:" + tempInfo.Size)
+	datSize := info.Size()
+	tempSize, _ := strconv.Atoi(tempInfo.Size)
+
+	if datSize > int64(tempSize) {
+		log.Printf("file Size mismatch: actualSize: %d tempInfoSize:%s\n", datSize, tempSize)
 		return false
 	}
 	return true
 }
 
 func GetFileDat(c *gin.Context) {
+	uuid := middleware.GetObjectFromHeader(c.Request.Header)
+	filePath := locate.TempLoc + uuid + ".dat"
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Println(err)
+		c.Status(http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+	io.Copy(c.Writer, file)
+}
+
+func GetFileSize(c *gin.Context) {
 	// todo uuid获取方式暂定
 	uuid := c.Query("uuid")
 	filePath := locate.TempLoc + uuid + ".dat"
@@ -196,5 +212,5 @@ func GetFileDat(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.Header("content-length", fmt.Sprintf("%d", info.Size()))
+	c.Header("FileSize", fmt.Sprintf("%d", info.Size()))
 }

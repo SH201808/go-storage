@@ -4,6 +4,7 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 	"file-server/dataServer/locate"
+	"file-server/middleware"
 	response "file-server/models/Response"
 	"io"
 	"log"
@@ -32,7 +33,7 @@ func Upload(c *gin.Context) {
 }
 
 func Download(c *gin.Context) {
-	fileHash := c.Request.Header.Get("Hash")
+	fileHash := middleware.GetObjectFromHeader(c.Request.Header)
 	log.Println("download hash:" + fileHash)
 	filePath := getFile(fileHash)
 	if filePath == "" {

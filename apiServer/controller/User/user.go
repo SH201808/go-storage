@@ -2,8 +2,8 @@ package user
 
 import (
 	"file-server/dao"
+	"file-server/middleware/token"
 	response "file-server/models/Response"
-	"file-server/token"
 	"log"
 	"net/http"
 	"time"

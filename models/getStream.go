@@ -17,7 +17,7 @@ func newGetStream(url string, object string) (*GetStream, error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "NewGetStream NewRequest: hash:%s, url: %s", object, url)
 	}
-	req.Header.Set("Hash", object)
+	req.Header.Set("object", object)
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {

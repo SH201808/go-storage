@@ -4,15 +4,13 @@ import (
 	file "file-server/apiServer/controller/File"
 	"file-server/apiServer/controller/Resume"
 	user "file-server/apiServer/controller/User"
-	"file-server/token"
-
 	"github.com/gin-gonic/gin"
 )
 
 func Setup(r *gin.Engine) {
-	fileGroup := r.Group("/file", token.AuthMiddleware())
+	fileGroup := r.Group("/file")
 	{
-		fileGroup.PUT("/upload", file.Upload)
+		//fileGroup.PUT("/upload", file.Upload)
 		fileGroup.GET("/download", file.Download)
 
 		resumeGroup := fileGroup.Group("/resume")

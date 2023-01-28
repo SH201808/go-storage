@@ -35,5 +35,6 @@ func Setup(r *gin.Engine) {
 
 		//断点续传服务
 		tempFileGroup.GET("/getFileDat", tempFile.GetFileDat)
+		tempFileGroup.HEAD("/getFileSize", tempFile.GetFileSize)
 	}
 }

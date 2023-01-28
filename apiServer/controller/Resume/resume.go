@@ -3,6 +3,7 @@ package Resume
 import (
 	heartbeat "file-server/apiServer/heartBeat"
 	"file-server/apiServer/locate"
+	"file-server/middleware"
 	response "file-server/models/Response"
 	"file-server/models/meta"
 	"file-server/rs"
@@ -18,7 +19,7 @@ import (
 )
 
 func GetToken(c *gin.Context) {
-	hash := c.Request.Header.Get("Digests")
+	hash := middleware.GetHashFromHeader(c.Request.Header)
 	if locate.Exist(hash) {
 		// todo 新增文件版本号
 		c.JSON(http.StatusOK, response.Success("save file success"))
@@ -46,7 +47,7 @@ func storeResumeObject(c *gin.Context, name string, hash string, size int64) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.Header("location", "/resume/"+url.PathEscape(stream.ToToken()))
+	c.Header("location", url.PathEscape(stream.ToToken()))
 	c.Status(http.StatusCreated)
 }
 
@@ -61,18 +62,26 @@ func Upload(c *gin.Context) {
 	}
 	current := stream.CurrentSize()
 	if current == -1 {
+		log.Println("currentSize illegal")
 		c.Status(http.StatusNotFound)
 		return
 	}
-	offset := utils.GetOffsetFromHeader(c.Request.Header)
+	offset := middleware.GetOffsetFromHeader(c.Request.Header)
 	if current != offset {
+		log.Println(current)
+		log.Println(offset)
 		c.Status(http.StatusRequestedRangeNotSatisfiable)
 		return
+	}
+	if current == 32000 {
+		log.Println("hhh")
 	}
 
 	bytes := make([]byte, rs.BLOCK_SIZE)
 	for {
 		n, err := io.ReadFull(c.Request.Body, bytes)
+		log.Println("ReadFull n:", n)
+		log.Println("ReadFull err:", err)
 		if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 			log.Println(err)
 			c.Status(http.StatusInternalServerError)
@@ -97,10 +106,12 @@ func Upload(c *gin.Context) {
 				c.Status(http.StatusForbidden)
 				return
 			}
-			hash := utils.CanculateSha1(getStream)
+			hash := utils.CalculateSha1(getStream)
 			if hash != stream.Hash {
 				stream.Commit(false)
 				log.Println("resumable put done but hash mismatch")
+				log.Println("calculate hash:", hash)
+				log.Println("stream.hash:", stream.Hash)
 				c.Status(http.StatusForbidden)
 				return
 			}

@@ -69,8 +69,9 @@ func (stream *TempPutStraem) Commit(flag bool) {
 	if !flag {
 		method = "DELETE"
 		url += "/fileDelete"
+	} else {
+		url += "/removeToStore"
 	}
-	url += "/removeToStore"
 	req, _ := http.NewRequest(method, url, nil)
 	req.Header.Set("uuid", stream.UUID)
 

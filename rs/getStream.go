@@ -60,10 +60,10 @@ func (s *RSGetStream) Seek(offset int64, whence int) (int64, error) {
 		length := int64(BLOCK_SIZE)
 		if offset < length {
 			length = offset
-			buf := make([]byte, length)
-			io.ReadFull(s, buf)
-			offset -= length
 		}
+		buf := make([]byte, length)
+		io.ReadFull(s, buf)
+		offset -= length
 	}
 	return offset, nil
 }

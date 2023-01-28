@@ -3,8 +3,8 @@ package rs
 import (
 	"encoding/base64"
 	"encoding/json"
+	"file-server/middleware"
 	"file-server/models"
-	"file-server/utils"
 	"fmt"
 	"io"
 	"log"
@@ -58,7 +58,7 @@ func NewRSResumablePutStreamFromToken(token string) (*ResumablePutStream, error)
 }
 
 func (s *ResumablePutStream) CurrentSize() int64 {
-	r, err := http.Head(fmt.Sprintf("http://%s/temp/%s", s.Servers[0], s.UUIDS[0]))
+	r, err := http.Head(fmt.Sprintf("http://%s/temp/getFileSize?uuid=%s", s.Servers[0], s.UUIDS[0]))
 	if err != nil {
 		log.Println(err)
 		return -1
@@ -67,7 +67,8 @@ func (s *ResumablePutStream) CurrentSize() int64 {
 		log.Println(r.StatusCode)
 		return -1
 	}
-	size := utils.GetOffsetFromHeader(r.Header) * DATA_SHARDS
+	size := middleware.GetSizeFromHeader(r.Header) * DATA_SHARDS
+	log.Println("Get CurrentSize:", size)
 	if size > s.Size {
 		size = s.Size
 	}

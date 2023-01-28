@@ -3,6 +3,7 @@ package file
 import (
 	heartbeat "file-server/apiServer/heartBeat"
 	"file-server/apiServer/locate"
+	"file-server/middleware"
 	response "file-server/models/Response"
 	"file-server/models/meta"
 	"file-server/rs"
@@ -18,17 +19,15 @@ import (
 )
 
 func Upload(c *gin.Context) {
-	hash := c.Request.Header.Get("Digests")
+	hash := middleware.GetHashFromHeader(c.Request.Header)
 	if locate.Exist(hash) {
 		c.JSON(http.StatusOK, response.Success("save file success"))
 		return
 	}
 	// c.Request.URL.EscapedPath()
-	// todo 上传携带空格的数据存在转义问题
-	FileSize := c.Request.Header.Get("FileSize")
-	fileSize, _ := strconv.Atoi(FileSize)
+	fileSize := middleware.GetSizeFromHeader(c.Request.Header)
 	//post元数据到数据服务
-	err := storeObject(c.Request.Body, int64(fileSize), hash)
+	err := storeObject(c.Request.Body, fileSize, hash)
 	if err != nil {
 		log.Println("Upload err:", err)
 		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
@@ -57,7 +56,7 @@ func storeObject(r io.Reader, fileSize int64, fileHash string) error {
 	}
 
 	reader := io.TeeReader(r, stream)
-	getHash := utils.CanculateSha1(reader)
+	getHash := utils.CalculateSha1(reader)
 	if getHash != fileHash {
 		stream.Commit(false)
 		return fmt.Errorf("object hash mismatch")
@@ -100,7 +99,8 @@ func Download(c *gin.Context) {
 	defer stream.Close()
 
 	//获取断点下载偏移量
-	offset := utils.GetOffsetFromHeader(c.Request.Header)
+	// todo offset > size 是否需要判断
+	offset := middleware.GetOffsetFromHeader(c.Request.Header)
 	if offset != 0 {
 		stream.Seek(offset, io.SeekCurrent)
 		c.Header("content-range", fmt.Sprintf("bytes%d-%d/%d", offset, size-1, size))
