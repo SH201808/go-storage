@@ -1,6 +1,7 @@
 package file
 
 import (
+	"compress/gzip"
 	heartbeat "file-server/apiServer/heartBeat"
 	"file-server/apiServer/locate"
 	"file-server/middleware"
@@ -106,12 +107,26 @@ func Download(c *gin.Context) {
 		c.Header("content-range", fmt.Sprintf("bytes%d-%d/%d", offset, size-1, size))
 		c.Status(http.StatusPartialContent)
 	}
-
-	_, err = io.Copy(c.Writer, stream)
-	if err != nil {
-		log.Println("copy err:", err)
-		c.JSON(http.StatusInternalServerError, response.Err("copy err"))
-		return
+	acceptGzip := false
+	encoding := middleware.GetEncodingFromHeader(c.Request.Header)
+	for i := range encoding {
+		if encoding[i] == "gzip" {
+			acceptGzip = true
+			break
+		}
+	}
+	if acceptGzip {
+		c.Writer.Header().Set("content-encoding", "gzip")
+		w2 := gzip.NewWriter(c.Writer)
+		io.Copy(w2, stream)
+		w2.Close()
+	} else {
+		_, err = io.Copy(c.Writer, stream)
+		if err != nil {
+			log.Println("copy err:", err)
+			c.JSON(http.StatusInternalServerError, response.Err("copy err"))
+			return
+		}
 	}
 
 	// ip := locate.FileLoc(file.Hash)

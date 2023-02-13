@@ -23,7 +23,7 @@ func GetOffsetFromHeader(header http.Header) int64 {
 }
 
 func GetSizeFromHeader(header http.Header) int64 {
-	fileSize := header.Get("FileSize")
+	fileSize := header.Get("content-length")
 	size, err := strconv.Atoi(fileSize)
 	if err != nil {
 		log.Println("size illegal")
@@ -41,4 +41,9 @@ func GetHashFromHeader(header http.Header) string {
 func GetObjectFromHeader(header http.Header) string {
 	object := header.Get("object")
 	return object
+}
+
+func GetEncodingFromHeader(header http.Header) []string {
+	encoding := header["Accept-Encoding"]
+	return encoding
 }

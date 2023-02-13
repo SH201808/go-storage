@@ -1,6 +1,7 @@
 package tempFile
 
 import (
+	"compress/gzip"
 	"encoding/json"
 	"file-server/dataServer/UUID"
 	"file-server/dataServer/locate"
@@ -135,13 +136,21 @@ func RemoveToStore(c *gin.Context) {
 
 func commitTempObject(datFile string, tempInfo *models.TempFileMeta) {
 	f, _ := os.Open(datFile)
+	defer f.Close()
 	d := utils.CalculateSha1(f)
-	f.Close()
+
+	f.Seek(0, io.SeekStart)
 
 	hash := tempInfo.Hash()
 	newPath := locate.FileLoc + tempInfo.Name + "." + d
+	w, _ := os.Create(newPath)
+	w2 := gzip.NewWriter(w)
+	io.Copy(w2, f)
+	w2.Close()
+
+	os.Remove(datFile)
+
 	id, _ := strconv.Atoi(tempInfo.Id())
-	os.Rename(datFile, newPath)
 	locate.Add(hash, id)
 }
 

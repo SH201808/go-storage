@@ -1,6 +1,7 @@
 package file
 
 import (
+	"compress/gzip"
 	"crypto/sha1"
 	"encoding/base64"
 	"file-server/dataServer/locate"
@@ -64,7 +65,19 @@ func getFile(name string) string {
 }
 
 func sendFile(w io.Writer, filePath string) {
-	file, _ := os.Open(filePath)
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 	defer file.Close()
-	io.Copy(w, file)
+
+	gzipStream, err := gzip.NewReader(file)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	io.Copy(w, gzipStream)
+	gzipStream.Close()
 }

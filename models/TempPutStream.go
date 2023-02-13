@@ -52,11 +52,11 @@ func (stream *TempPutStraem) Write(data []byte) (n int, err error) {
 
 	client := http.Client{}
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 
 	if err != nil {
 		return 0, errors.Wrapf(err, "upload temp file err client Do: uuid:", stream.UUID)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return 0, errors.Errorf("Write:dataServer return not ok:%d", resp.StatusCode)
 	}

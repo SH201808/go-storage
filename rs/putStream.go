@@ -4,6 +4,7 @@ import (
 	"file-server/models"
 	"fmt"
 	"io"
+	"log"
 
 	"github.com/klauspost/reedsolomon"
 )
@@ -71,9 +72,18 @@ func (e *encoder) Flush() {
 		return
 	}
 	shards, _ := e.enc.Split(e.cache)
-	e.enc.Encode(shards)
+	err := e.enc.Encode(shards)
+	if err != nil {
+		log.Println("encode err:", err)
+		return
+	}
 	for i := range shards {
-		e.writers[i].Write(shards[i])
+		n, err := e.writers[i].Write(shards[i])
+		if err != nil {
+			log.Println("encoder write n:", n)
+			log.Println("encoder write err:", err)
+			return
+		}
 	}
 	e.cache = []byte{}
 }

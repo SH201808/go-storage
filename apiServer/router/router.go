@@ -10,7 +10,7 @@ import (
 func Setup(r *gin.Engine) {
 	fileGroup := r.Group("/file")
 	{
-		//fileGroup.PUT("/upload", file.Upload)
+		fileGroup.PUT("/upload", file.Upload)
 		fileGroup.GET("/download", file.Download)
 
 		resumeGroup := fileGroup.Group("/resume")

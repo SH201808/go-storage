@@ -73,15 +73,10 @@ func Upload(c *gin.Context) {
 		c.Status(http.StatusRequestedRangeNotSatisfiable)
 		return
 	}
-	if current == 32000 {
-		log.Println("hhh")
-	}
 
 	bytes := make([]byte, rs.BLOCK_SIZE)
 	for {
 		n, err := io.ReadFull(c.Request.Body, bytes)
-		log.Println("ReadFull n:", n)
-		log.Println("ReadFull err:", err)
 		if err != nil && err != io.EOF && err != io.ErrUnexpectedEOF {
 			log.Println(err)
 			c.Status(http.StatusInternalServerError)
