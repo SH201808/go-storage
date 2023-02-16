@@ -9,8 +9,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
-
 	"os"
 )
 
@@ -26,7 +24,7 @@ func CalculateSha1(reader io.Reader) string {
 	if err != nil {
 		log.Println("CalculateSha1 err:", err)
 	}
-	return url.PathEscape(base64.StdEncoding.EncodeToString(_sha1.Sum(nil)))
+	return base64.StdEncoding.EncodeToString(_sha1.Sum(nil))
 }
 
 func GenByte(fileDst string) {

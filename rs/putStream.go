@@ -22,6 +22,10 @@ func NewRsPutStream(dataServers []string, hash string, size int64) (*RSPutStream
 	writers := make([]io.Writer, ALL_SHARDS)
 	var err error
 	for i := range writers {
+		// todo rs 的最后一块不足 BLOCK_PER_SHARD 会补0
+		if i == ALL_SHARDS-1 && perShard%BLOCK_PER_SHARD != 0 {
+
+		}
 		writers[i], err = models.NewPutStream(fmt.Sprintf("%d", perShard), fmt.Sprintf("%s.%d", hash, i), dataServers[i])
 		if err != nil {
 			return nil, err
@@ -32,11 +36,15 @@ func NewRsPutStream(dataServers []string, hash string, size int64) (*RSPutStream
 	return &RSPutStream{enc}, nil
 }
 
-func (s *RSPutStream) Commit(success bool) {
+func (s *RSPutStream) Commit(success bool) error {
 	s.Flush()
 	for i := range s.writers {
-		s.writers[i].(*models.TempPutStraem).Commit(success)
+		err := s.writers[i].(*models.TempPutStraem).Commit(success)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 type encoder struct {
@@ -59,7 +67,11 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 		}
 		e.cache = append(e.cache, p[current:current+next]...)
 		if len(e.cache) == BLOCK_SIZE {
-			e.Flush()
+			err := e.Flush()
+			if err != nil {
+				log.Println("flush err:", err)
+				return length, nil
+			}
 		}
 		current += next
 		length -= next
@@ -67,23 +79,24 @@ func (e *encoder) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
-func (e *encoder) Flush() {
+func (e *encoder) Flush() error {
 	if len(e.cache) == 0 {
-		return
+		return nil
 	}
 	shards, _ := e.enc.Split(e.cache)
 	err := e.enc.Encode(shards)
 	if err != nil {
 		log.Println("encode err:", err)
-		return
+		return err
 	}
 	for i := range shards {
 		n, err := e.writers[i].Write(shards[i])
 		if err != nil {
 			log.Println("encoder write n:", n)
 			log.Println("encoder write err:", err)
-			return
+			return err
 		}
 	}
 	e.cache = []byte{}
+	return nil
 }

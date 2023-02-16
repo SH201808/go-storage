@@ -36,5 +36,6 @@ func FileLoc(fileHash string) (locateInfo map[int]string) {
 }
 
 func Exist(fileHash string) bool {
+	// todo 文件意外删除后，数据节点无法找到文件，如果再次上传hash值一样的文件，将会上传成功，但es中将存在之前意外删除的版本元数据
 	return len(FileLoc(fileHash)) >= rs.DATA_SHARDS
 }

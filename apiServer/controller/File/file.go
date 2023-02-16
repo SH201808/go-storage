@@ -39,7 +39,7 @@ func Upload(c *gin.Context) {
 	file := meta.File{
 		Name: name,
 		Hash: hash,
-		Size: c.Request.Header.Get("FileSize"),
+		Size: strconv.Itoa(int(fileSize)),
 	}
 	err = filemeta.Put(file)
 	if err != nil {
@@ -62,7 +62,10 @@ func storeObject(r io.Reader, fileSize int64, fileHash string) error {
 		stream.Commit(false)
 		return fmt.Errorf("object hash mismatch")
 	}
-	stream.Commit(true)
+	err = stream.Commit(true)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

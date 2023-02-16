@@ -61,6 +61,7 @@ func UploadtoTempFile(c *gin.Context) {
 	uuid := c.Request.Header.Get("uuid")
 	tempInfo, err := readFromFile(uuid)
 	if err != nil {
+		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
 		log.Println("read from file err:", err)
 		return
 	}
@@ -83,7 +84,7 @@ func UploadtoTempFile(c *gin.Context) {
 	if !compareSize(tempInfo, datFile) {
 		os.Remove(infoPath)
 		os.Remove(datPath)
-		c.JSON(http.StatusOK, response.Err("upload file err"))
+		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
 		return
 	}
 
@@ -112,6 +113,7 @@ func RemoveToStore(c *gin.Context) {
 	tempInfo, err := readFromFile(uuid)
 	if err != nil {
 		log.Println("read from file err:", err)
+		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
 		return
 	}
 
@@ -128,7 +130,7 @@ func RemoveToStore(c *gin.Context) {
 	os.Remove(infoPath)
 	if !compareSize(tempInfo, datFile) {
 		os.Remove(datPath)
-		c.JSON(http.StatusOK, response.Err("upload file err"))
+		c.JSON(http.StatusInternalServerError, response.Err("upload file err"))
 		return
 	}
 	commitTempObject(datPath, tempInfo)
@@ -181,8 +183,9 @@ func compareSize(tempInfo *models.TempFileMeta, datFile *os.File) bool {
 	datSize := info.Size()
 	tempSize, _ := strconv.Atoi(tempInfo.Size)
 
+	log.Printf("datSize: %d, tempSize: %d\n", datSize, tempSize)
 	if datSize > int64(tempSize) {
-		log.Printf("file Size mismatch: actualSize: %d tempInfoSize:%s\n", datSize, tempSize)
+		log.Printf("file Size mismatch: actualSize: %d tempInfoSize:%d\n", datSize, tempSize)
 		return false
 	}
 	return true

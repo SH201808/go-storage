@@ -13,6 +13,8 @@ import (
 )
 
 func init() {
+	log.SetFlags(log.Llongfile)
+
 	setting.Init()
 	mysql.Init(setting.Conf.MySQLConfig)
 

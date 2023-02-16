@@ -3,9 +3,12 @@ package models
 import (
 	"encoding/json"
 	response "file-server/models/Response"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -46,15 +49,24 @@ func (stream *TempPutStraem) Write(data []byte) (n int, err error) {
 	url := "http://" + stream.Server + "/temp/file/"
 	req, err := http.NewRequest("PATCH", url, strings.NewReader(string(data)))
 	if err != nil {
-		return 0, errors.Wrapf(err, "upload temp file err NewRequest: uuid:", stream.UUID)
+		return 0, errors.Wrapf(err, "upload temp file err NewRequest: uuid:%s", stream.UUID)
 	}
 	req.Header.Set("uuid", stream.UUID)
 
-	client := http.Client{}
+	tr := &http.Transport{
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 60 * time.Second,
+		}).DialContext,
+		MaxIdleConns:        500,
+		IdleConnTimeout:     60 * time.Second,
+		MaxIdleConnsPerHost: 100,
+	}
+	client := http.Client{Transport: tr}
 	resp, err := client.Do(req)
 
 	if err != nil {
-		return 0, errors.Wrapf(err, "upload temp file err client Do: uuid:", stream.UUID)
+		return 0, errors.Wrapf(err, "upload temp file err client Do: uuid:%s", stream.UUID)
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
@@ -63,7 +75,7 @@ func (stream *TempPutStraem) Write(data []byte) (n int, err error) {
 	return len(data), nil
 }
 
-func (stream *TempPutStraem) Commit(flag bool) {
+func (stream *TempPutStraem) Commit(flag bool) error {
 	method := "PUT"
 	url := "http://" + stream.Server + "/temp"
 	if !flag {
@@ -76,5 +88,9 @@ func (stream *TempPutStraem) Commit(flag bool) {
 	req.Header.Set("uuid", stream.UUID)
 
 	client := http.Client{}
-	client.Do(req)
+	_, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("commit err:%v, host:%s", err, stream.Server)
+	}
+	return nil
 }
