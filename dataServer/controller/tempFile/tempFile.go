@@ -13,6 +13,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 
@@ -139,15 +140,32 @@ func RemoveToStore(c *gin.Context) {
 func commitTempObject(datFile string, tempInfo *models.TempFileMeta) {
 	f, _ := os.Open(datFile)
 	defer f.Close()
-	d := utils.CalculateSha1(f)
+	d := url.PathEscape(utils.CalculateSha1(f))
 
 	f.Seek(0, io.SeekStart)
 
 	hash := tempInfo.Hash()
 	newPath := locate.FileLoc + tempInfo.Name + "." + d
-	w, _ := os.Create(newPath)
-	w2 := gzip.NewWriter(w)
-	io.Copy(w2, f)
+	w, err := os.Create(newPath)
+	if err != nil {
+		log.Println("create newPath err: ", err)
+		return
+	}
+	defer w.Close()
+
+	// w2 := gzip.NewWriter(w)
+	w2, err := gzip.NewWriterLevel(w, gzip.BestCompression)
+	if err != nil {
+		log.Println("NewGzipWriter err: ", err)
+		return
+	}
+
+	n, err := io.Copy(w2, f)
+	log.Printf("gzip write n: %d\n", n)
+	if err != nil {
+		log.Println("gzip write err:", err)
+		return
+	}
 	w2.Close()
 
 	os.Remove(datFile)

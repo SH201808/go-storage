@@ -11,16 +11,17 @@ import (
 	"file-server/service/filemeta"
 	"file-server/utils"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Upload(c *gin.Context) {
-	hash := middleware.GetHashFromHeader(c.Request.Header)
+	hash := url.PathEscape(middleware.GetHashFromHeader(c.Request.Header))
 	if locate.Exist(hash) {
 		c.JSON(http.StatusOK, response.Success("save file success"))
 		return
@@ -57,7 +58,8 @@ func storeObject(r io.Reader, fileSize int64, fileHash string) error {
 	}
 
 	reader := io.TeeReader(r, stream)
-	getHash := utils.CalculateSha1(reader)
+	getHash := url.PathEscape(utils.CalculateSha1(reader))
+	log.Printf("getHash: %s, fileHash: %s\n", getHash, fileHash)
 	if getHash != fileHash {
 		stream.Commit(false)
 		return fmt.Errorf("object hash mismatch")
