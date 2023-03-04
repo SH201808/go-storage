@@ -26,11 +26,11 @@ func SetFileLoc() {
 	setting.Conf.Port = port
 	FileLoc = "../fileStore/" + setting.Conf.Port + "/"
 	TempLoc = "../tempData/" + setting.Conf.Port + "/"
-	mkdir(FileLoc)
-	mkdir(TempLoc)
+	Mkdir(FileLoc)
+	Mkdir(TempLoc)
 }
 
-func mkdir(loc string) {
+func Mkdir(loc string) {
 	_, err := os.Stat(loc)
 	if os.IsExist(err) {
 		return
@@ -45,7 +45,7 @@ func mkdir(loc string) {
 
 func Start() {
 	mq := rabbitmq.New(*setting.Conf.RabbitMQConfig)
-	getAllFiles()
+	loadAllFilesToStore()
 	mq.Bind("dataServers")
 
 	c := mq.Consume()
@@ -66,7 +66,7 @@ func Start() {
 	}
 }
 
-func getAllFiles() {
+func loadAllFilesToStore() {
 	dir, err := ioutil.ReadDir(FileLoc)
 	if err != nil {
 		log.Fatalln("open dir err:", err)
@@ -106,4 +106,15 @@ func Delete(fileLoc string) {
 	mutex.Lock()
 	delete(store, fileLoc)
 	mutex.Unlock()
+}
+
+// todo 并发问题,sleep中，文件删除
+func Get() []string {
+	files := make([]string, len(store))
+	mutex.Lock()
+	defer mutex.Unlock()
+	for hash, _ := range store {
+		files = append(files, hash)
+	}
+	return files
 }

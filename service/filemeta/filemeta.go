@@ -8,7 +8,7 @@ import (
 )
 
 func Put(file meta.File) error {
-	newFileMeta, err := dao.IsExistsFileMeta(file.Name)
+	newFileMeta, err := dao.IsExistsFileName(file.Name)
 	if err != nil {
 		if !elastic.IsNotFound(err) {
 			return err
@@ -21,5 +21,13 @@ func Put(file meta.File) error {
 }
 
 func Get(fileName string, fileVersion int) (meta.File, error) {
-	return dao.GetFileMeta(fileName, fileVersion)
+	return dao.GetFileMetaByName_Version(fileName, fileVersion)
+}
+
+func GetFileSize(fileHash string) (string, error) {
+	meta, err := dao.GetFileMetaByHash(fileHash)
+	if err != nil {
+		return "", err
+	}
+	return meta.Size, nil
 }
